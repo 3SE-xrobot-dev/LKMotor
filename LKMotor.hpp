@@ -174,6 +174,7 @@ class LKMotor : public Motor {
 
   void OnReceive(bool in_isr, const LibXR::CAN::ClassicPack& pack) {
     UNUSED(in_isr);
+    if (pack.dlc != 8) return;
     while (recv_queue_.Push(pack) != LibXR::ErrorCode::OK) recv_queue_.Pop();
   }
 
