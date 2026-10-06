@@ -192,7 +192,16 @@ class LKMotor : public Motor {
       const float sign = param_.reverse ? -1.0f : 1.0f;
       current_raw_ = current;
       feedback_.position = sign * relative * (360.0f / 65536.0f) * kDegToRad;
-      feedback_.abs_angle = feedback_.position;
+      const LibXR::CycleValue<float> angle(feedback_.position);
+      if (angle_initialized_) {
+        feedback_.multi_turn_angle += angle - feedback_.abs_angle;
+      } else {
+        if (!multi_turn_seeded_) {
+          feedback_.multi_turn_angle = feedback_.position;
+        }
+        angle_initialized_ = true;
+      }
+      feedback_.abs_angle = angle;
       feedback_.velocity = sign * rpm;
       feedback_.omega = feedback_.velocity * 0.10471975511965977f;
       feedback_.torque = sign * current * param_.torque_nm_per_raw;
@@ -205,12 +214,18 @@ class LKMotor : public Motor {
       const auto signed_value = static_cast<int64_t>(value);
       feedback_.position = (param_.reverse ? -1.0f : 1.0f) *
                            static_cast<float>(signed_value) * 0.0001745329252f;
+      feedback_.multi_turn_angle = feedback_.position;
+      feedback_.abs_angle = feedback_.position;
+      angle_initialized_ = false;
+      multi_turn_seeded_ = true;
     }
   }
 
   LibXR::CAN* can_;
   Param param_;
   Feedback feedback_{};
+  bool angle_initialized_ = false;
+  bool multi_turn_seeded_ = false;
   int16_t current_raw_ = 0;
   LibXR::MPMCQueue<LibXR::CAN::ClassicPack> recv_queue_{4};
 };

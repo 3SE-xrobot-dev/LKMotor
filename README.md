@@ -4,6 +4,11 @@ LK CAN motor driver using the shared `Motor` interface. One motor uses standard
 CAN ID `0x140 + motor_id`; the default `motor_id = 1` matches the Hero pitch
 motor at `0x141`. The driver queues feedback and decodes it in `Update()`.
 
+`GetFeedback().multi_turn_angle` accumulates single-turn encoder feedback in
+radians across wraparound. A `0x92` reply seeds it with the motor-reported
+multi-turn angle; the next single-turn frame establishes a new delta baseline.
+Successive samples must be less than half a turn apart.
+
 `MODE_CURRENT` uses normalized current in `MotorCmd.velocity` (matching
 `RMMotor`); `CurrentControlRaw()` accepts the legacy signed command directly.
 `MODE_VELOCITY` uses rpm. `MODE_POSITION` uses radians and emits command `0xA4`.
