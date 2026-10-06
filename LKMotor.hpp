@@ -3,9 +3,6 @@
 // clang-format off
 /* === MODULE MANIFEST V2 ===
 module_description: LK classic CAN motor driver with protocol V2.36 feedback and control
-constructor_args: []
-template_args: []
-required_hardware: []
 standalone: false
 depends:
 - 3SE-xrobot-dev/Motor
